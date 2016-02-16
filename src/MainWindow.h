@@ -1,18 +1,21 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef MAINWIDGET_H
+#define MAINWIDGET_H
 
 #include <QMainWindow>
+#include "MapWidget.h"
 
 
-class MainWindow : public QMainWindow
+class MainWindow
+    : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit MainWindow();
 
 private:
+    MapWidget* mMapWidget;
 };
 
-#endif // MAINWINDOW_H
+
+#endif  // MAINWIDGET_H

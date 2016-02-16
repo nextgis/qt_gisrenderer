@@ -1,10 +1,12 @@
 #include "MainWindow.h"
+#include <QtWidgets>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
+MainWindow::MainWindow()
 {
-}
+    mMapWidget = new MapWidget();
+    mMapWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    setCentralWidget(mMapWidget);
 
-MainWindow::~MainWindow()
-{
+//    setMinimumSize(200, 200);
+    resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
 }

@@ -1,11 +1,18 @@
-#include "MainWindow.h"
 #include <QApplication>
+#include "MainWindow.h"
 
-int main(int argc, char *argv[])
+
+int main(
+        int   argc,
+        char* argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
 
-    return a.exec();
-}
+    QScopedPointer <MainWindow> mw1;
+    mw1.reset(new MainWindow);
+    mw1->setToolTip("OpenGL proba");
+    mw1->setWindowTitle(QStringLiteral("Threaded OpenGlOffscreenSurface"));
+    mw1->show();
+
+    return (a.exec());
+}  // main
