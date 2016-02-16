@@ -23,12 +23,14 @@ SOURCES += \
     $$PWD/src/MapPaintSurface.cpp \
     $$PWD/src/MapWidget.cpp \
     $$PWD/src/OpenGlOffscreenSurface.cpp \
+    $$PWD/src/RenderThread.cpp \
 
 HEADERS += \
     $$PWD/src/MainWindow.h \
     $$PWD/src/MapPaintSurface.h \
     $$PWD/src/MapWidget.h \
     $$PWD/src/OpenGlOffscreenSurface.h \
+    $$PWD/src/RenderThread.h \
 
 OTHER_FILES += \
     $$PWD/uncrustify.cfg \
