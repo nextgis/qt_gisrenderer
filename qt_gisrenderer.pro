@@ -16,3 +16,6 @@ SOURCES += main.cpp\
         MainWindow.cpp
 
 HEADERS  += MainWindow.h
+
+OTHER_FILES += \
+    $$PWD/uncrustify.cfg \
