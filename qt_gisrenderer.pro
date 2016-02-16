@@ -20,9 +20,15 @@ QMAKE_CXXFLAGS += -std=c++11
 SOURCES += \
     $$PWD/src/main.cpp \
     $$PWD/src/MainWindow.cpp \
+    $$PWD/src/MapPaintSurface.cpp \
+    $$PWD/src/MapWidget.cpp \
+    $$PWD/src/OpenGlOffscreenSurface.cpp \
 
 HEADERS += \
     $$PWD/src/MainWindow.h \
+    $$PWD/src/MapPaintSurface.h \
+    $$PWD/src/MapWidget.h \
+    $$PWD/src/OpenGlOffscreenSurface.h \
 
 OTHER_FILES += \
     $$PWD/uncrustify.cfg \
