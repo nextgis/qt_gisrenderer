@@ -11,11 +11,18 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = qt_gisrenderer
 TEMPLATE = app
 
+#QMAKE_CXXFLAGS += $$(CXXFLAGS)
+#QMAKE_CFLAGS += $$(CFLAGS)
+#QMAKE_LFLAGS += $$(LDFLAGS)
 
-SOURCES += main.cpp\
-        MainWindow.cpp
+QMAKE_CXXFLAGS += -std=c++11
 
-HEADERS  += MainWindow.h
+SOURCES += \
+    $$PWD/src/main.cpp \
+    $$PWD/src/MainWindow.cpp \
+
+HEADERS += \
+    $$PWD/src/MainWindow.h \
 
 OTHER_FILES += \
     $$PWD/uncrustify.cfg \
