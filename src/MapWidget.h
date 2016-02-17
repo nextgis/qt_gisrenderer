@@ -10,10 +10,10 @@ class MapWidget
 {
     Q_OBJECT
 
-public:
+  public:
     explicit MapWidget(QWidget* parent = 0);
 
-protected:
+  protected:
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
 
@@ -23,17 +23,17 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
-private slots:
+  private slots:
     void updatePixmap(
-            const QImage& image,
-            double        scaleFactor);
+          const QImage& image,
+          double        scaleFactor);
 
     void zoom(double zoomFactor);
 
-private:
+  private:
     void scroll(
-            int deltaX,
-            int deltaY);
+          int deltaX,
+          int deltaY);
 
     RenderThread thread;
     QPixmap pixmap;

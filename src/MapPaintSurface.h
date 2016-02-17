@@ -10,23 +10,23 @@ class MapPaintSurface
 {
     Q_OBJECT
 
-public:
+  public:
     explicit MapPaintSurface(
-            QScreen* targetScreen = nullptr,
-            const QSize& size = QSize (1, 1));
+          QScreen* targetScreen = nullptr,
+          const QSize& size = QSize (1, 1));
 
     virtual ~MapPaintSurface() override;
 
-protected:
+  protected:
     virtual void initializeGL() override;
 
     virtual void resizeGL(
-            int width,
-            int height) override;
+          int width,
+          int height) override;
 
     virtual void paintGL() override;
 
-private:
+  private:
     QImage m_image;
 };
 

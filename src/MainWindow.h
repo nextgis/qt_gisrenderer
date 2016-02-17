@@ -10,10 +10,10 @@ class MainWindow
 {
     Q_OBJECT
 
-public:
+  public:
     explicit MainWindow();
 
-private:
+  private:
     MapWidget* mMapWidget;
 };
 

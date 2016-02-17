@@ -14,25 +14,25 @@ class RenderThread
 {
     Q_OBJECT
 
-public:
+  public:
     explicit RenderThread(QObject* parent = 0);
     ~RenderThread();
 
     void render(
-            double centerX,
-            double centerY,
-            double scaleFactor,
-            QSize  resultSize);
+          double centerX,
+          double centerY,
+          double scaleFactor,
+          QSize  resultSize);
 
-signals:
+  signals:
     void renderedImage(
-            const QImage& image,
-            double        scaleFactor);
+          const QImage& image,
+          double        scaleFactor);
 
-protected:
+  protected:
     void run() Q_DECL_OVERRIDE;
 
-private:
+  private:
     MapPaintSurface* mPaintSurface;
 
     QMutex mutex;

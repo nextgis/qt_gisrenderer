@@ -3,8 +3,8 @@
 #include <QPainter>
 
 MapPaintSurface::MapPaintSurface(
-        QScreen*     targetScreen,
-        const QSize& size)
+      QScreen*     targetScreen,
+      const QSize& size)
     : OpenGlOffscreenSurface(targetScreen, size)
 {
 //    m_image = QImage("E:/path/to/image/proba.png");
@@ -19,8 +19,8 @@ void MapPaintSurface::initializeGL() {}
 
 
 void MapPaintSurface::resizeGL(
-        int width,
-        int height)            {}
+      int width,
+      int height)            {}
 
 
 void MapPaintSurface::paintGL()
@@ -30,7 +30,7 @@ void MapPaintSurface::paintGL()
 
     painter.drawImage(0, 0, m_image);
     painter.drawImage(bufferSize().width() - m_image.width(),
-            bufferSize().height() - m_image.height(), m_image);
+          bufferSize().height() - m_image.height(), m_image);
 
     painter.end();
 }  // MapPaintSurface::paintGL

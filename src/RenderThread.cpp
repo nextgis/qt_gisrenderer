@@ -24,10 +24,10 @@ RenderThread::~RenderThread()
 
 
 void RenderThread::render(
-        double centerX,
-        double centerY,
-        double scaleFactor,
-        QSize  resultSize)
+      double centerX,
+      double centerY,
+      double scaleFactor,
+      QSize  resultSize)
 {
     QMutexLocker locker(&mutex);
 

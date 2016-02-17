@@ -4,8 +4,8 @@
 #include <QtGui/QPainter>
 
 OpenGlOffscreenSurface::OpenGlOffscreenSurface(
-        QScreen*     targetScreen,
-        const QSize& size)
+      QScreen*     targetScreen,
+      const QSize& size)
     : QOffscreenSurface(targetScreen)
     , m_bufferSize(size)
 {
@@ -131,8 +131,8 @@ QImage OpenGlOffscreenSurface::grabFramebuffer()
             m_functions_3_0->glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo->handle());
             m_functions_3_0->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_resolvedFbo->handle());
             m_functions_3_0->glBlitFramebuffer(0, 0, bufferSize().width(),
-                    bufferSize().height(), 0, 0, bufferSize().width(),
-                    bufferSize().height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                  bufferSize().height(), 0, 0, bufferSize().width(),
+                  bufferSize().height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
             m_functions_3_0->glBindFramebuffer(GL_FRAMEBUFFER, 0);
         } else {
             // we must unbind the FBO here, so we can use its texture and bind the default
@@ -169,15 +169,15 @@ QImage OpenGlOffscreenSurface::grabFramebufferInternal(QOpenGLFramebufferObject*
     }
     GLenum internalFormat = fbo->format().internalTextureFormat();
     bool hasAlpha = internalFormat == GL_RGBA || internalFormat == GL_BGRA
-                    || internalFormat == GL_RGBA8;
+          || internalFormat == GL_RGBA8;
     if (internalFormat == GL_BGRA) {
         image = QImage(fbo->size(), hasAlpha ? QImage::Format_ARGB32 : QImage::Format_RGB32);
         m_functions->glReadPixels(0, 0, fbo->size().width(),
-                fbo->size().height(), GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
+              fbo->size().height(), GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
     } else if ((internalFormat == GL_RGBA) || (internalFormat == GL_RGBA8)) {
         image = QImage(fbo->size(), hasAlpha ? QImage::Format_RGBA8888 : QImage::Format_RGBX8888);
         m_functions->glReadPixels(0, 0, fbo->size().width(),
-                fbo->size().height(), GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
+              fbo->size().height(), GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
     } else {
         qDebug() << "OpenGlOffscreenSurface::grabFramebuffer() - Unsupported framebuffer format"
                  << internalFormat << "!";
@@ -209,9 +209,9 @@ void OpenGlOffscreenSurface::swapBuffersInternal()
         m_functions_3_0->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         // blit all buffers including depth buffer for further rendering
         m_functions_3_0->glBlitFramebuffer(0, 0, bufferSize().width(),
-                bufferSize().height(), 0, 0, bufferSize().width(),
-                bufferSize().height(), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
-                GL_NEAREST);
+              bufferSize().height(), 0, 0, bufferSize().width(),
+              bufferSize().height(), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
+              GL_NEAREST);
         m_functions_3_0->glBindFramebuffer(GL_FRAMEBUFFER, m_fbo->handle());
     } else {
         // we must unbind the FBO here, so we can use its texture and bind the default back-buffer
@@ -385,8 +385,8 @@ void OpenGlOffscreenSurface::resize(const QSize& newSize)
 
 
 void OpenGlOffscreenSurface::resize(
-        int width,
-        int height)
+      int width,
+      int height)
 {
     resize(QSize(width, height));
 }

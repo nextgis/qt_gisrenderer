@@ -27,7 +27,7 @@ class OpenGlOffscreenSurface
 {
     Q_OBJECT
 
-public:
+  public:
     /// @brief Constructor. Creates a render window.
     /// @param targetScreen Target screen.
     /// @param size Initial size of a surface buffer.
@@ -35,8 +35,8 @@ public:
     /// By default this uses the QWindow::requestedFormat() for OpenGL context and off-screen
     /// surface.
     explicit OpenGlOffscreenSurface(
-            QScreen* targetScreen = nullptr,
-            const QSize& size = QSize (1, 1));
+          QScreen* targetScreen = nullptr,
+          const QSize& size = QSize (1, 1));
 
     /// @brief Destructor.
     virtual ~OpenGlOffscreenSurface();
@@ -103,24 +103,24 @@ public:
     /// @param width Width of size.
     /// @param height Height of size.
     void resize(
-            int width,
-            int height);
+          int width,
+          int height);
 
-public slots:
+  public slots:
     /// @brief Lazy update routine like QWidget::update().
     void update();
 
     /// @brief Immediately render the widget contents to framebuffer.
     void render();
 
-signals:
+  signals:
     /// @brief Emitted when swapBuffers() was called and bufferswapping is done.
     void frameSwapped();
 
     /// @brief Emitted after a resizeEvent().
     void resized();
 
-protected:
+  protected:
     virtual void exposeEvent(QExposeEvent* e);
     virtual void resizeEvent(QResizeEvent* e);
     virtual bool event(QEvent* e) override;
@@ -136,8 +136,8 @@ protected:
     /// @param width New window width.
     /// @param height New window height.
     virtual void resizeGL(
-            int width,
-            int height) = 0;
+          int width,
+          int height) = 0;
 
     /// @brief Called whenever the window needs to repaint itself. Override to draw OpenGL content.
     /// When this function is called, the context is already current and the correct framebuffer is
@@ -149,7 +149,7 @@ protected:
     //      /// @brief This is called AFTER paintGL()! Only needed when painting using a QPainter.
     //      virtual void paintEvent(QPainter & painter) = 0;
 
-private:
+  private:
     Q_DISABLE_COPY(OpenGlOffscreenSurface)
     /// @brief Initialize the window.
     void initializeInternal();

@@ -150,8 +150,8 @@ void MapWidget::mouseReleaseEvent(QMouseEvent* event)
 
 
 void MapWidget::updatePixmap(
-        const QImage& image,
-        double        scaleFactor)
+      const QImage& image,
+      double        scaleFactor)
 {
     if (!lastDragPos.isNull()) {
         return;
@@ -174,8 +174,8 @@ void MapWidget::zoom(double zoomFactor)
 
 
 void MapWidget::scroll(
-        int deltaX,
-        int deltaY)
+      int deltaX,
+      int deltaY)
 {
     centerX += deltaX * curScale;
     centerY += deltaY * curScale;
