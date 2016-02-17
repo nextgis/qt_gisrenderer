@@ -8,8 +8,14 @@
 
 #include "MapPaintSurface.h"
 
+#if defined (QT_BUILD_GISRENDERER_LIB)
+  #define Q_GISRENDERER_EXPORT Q_DECL_EXPORT
+#else
+  #define Q_GISRENDERER_EXPORT Q_DECL_IMPORT
+#endif
 
-class RenderThread
+
+class Q_GISRENDERER_EXPORT RenderThread
     : public QThread
 {
     Q_OBJECT

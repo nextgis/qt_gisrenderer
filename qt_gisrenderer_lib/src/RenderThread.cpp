@@ -1,7 +1,5 @@
 #include "RenderThread.h"
 
-#include <QtWidgets>
-
 
 RenderThread::RenderThread(QObject* parent)
     : QThread(parent)
