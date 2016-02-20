@@ -12,7 +12,7 @@ QT = core gui
 #QMAKE_LFLAGS += $$(LDFLAGS)
 
 QMAKE_CXXFLAGS += -std=c++11
-
+CONFIG += c++11
 
 SOURCES += \
     $$PWD/src/MapPaintSurface.cpp \

@@ -2,7 +2,7 @@
 
 #include <QPainter>
 #include <QKeyEvent>
-
+#include <cmath>
 
 const double DefaultCenterX = -0.637011f;
 const double DefaultCenterY = -0.0395159f;
