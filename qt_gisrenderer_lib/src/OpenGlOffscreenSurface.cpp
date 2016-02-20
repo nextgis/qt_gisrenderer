@@ -33,8 +33,11 @@ OpenGlOffscreenSurface::~OpenGlOffscreenSurface()
         m_resolvedFbo = nullptr;
     }
     // destroy shader
-    delete m_blitShader;
-    m_blitShader = nullptr;
+    if (m_blitShader) {
+        m_blitShader->release();
+        delete m_blitShader;
+        m_blitShader = nullptr;
+    }
     // free context
     m_context->doneCurrent();
     delete m_context;

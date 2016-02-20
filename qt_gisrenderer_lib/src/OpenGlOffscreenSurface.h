@@ -20,8 +20,8 @@
 #include <mutex>
 
 
-// http://stackoverflow.com/a/35416036/4727406
-// http://stackoverflow.com/a/31382768/4727406
+// http://stackoverflow.com/a/35416036
+// http://stackoverflow.com/a/31382768
 class OpenGlOffscreenSurface
     : public QOffscreenSurface
 {
@@ -190,7 +190,7 @@ class OpenGlOffscreenSurface
     QOpenGLFramebufferObject* m_resolvedFbo = nullptr;
 
     /// @brief Shader used for blitting m_fbo to screen if glBlitFrameBuffer is not available.
-    QOpenGLShaderProgram* m_blitShader;
+    QOpenGLShaderProgram* m_blitShader = nullptr;
 
     QSize m_bufferSize;
 };

@@ -53,7 +53,12 @@ void RenderThread::run()
         double scaleFactor = this->scaleFactor;
         double centerX = this->centerX;
         double centerY = this->centerY;
+        bool aborted = abort;
         mutex.unlock();
+
+        if (aborted) {
+            break;
+        }
 
         mPaintSurface->resize(resultSize.width(), resultSize.height());
         mPaintSurface->render();
