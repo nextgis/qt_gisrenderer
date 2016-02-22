@@ -1,6 +1,5 @@
 #include "RenderThread.h"
 
-#include <QGuiApplication>
 #include <QTimer>
 
 
@@ -9,6 +8,21 @@ RenderThread::RenderThread(RenderedImage renderedImage)
 {
     restart = false;
     abort = false;
+
+    qDebug() << "guiApp starting";
+    std::string     test = "test";
+    int             argc = 1;
+    char*           argv[] = { const_cast <char*>(test.c_str()) };
+    mApp = new QGuiApplication(argc, argv);
+
+    QTimer timer;
+    timer.setSingleShot(true);
+    mApp->connect(&timer, SIGNAL(timeout()), mApp, SLOT(quit()));
+    timer.start(1000);  // your predefined timeout
+
+    mApp->exec();
+
+    qDebug() << "guiApp started";
 }
 
 
@@ -94,8 +108,8 @@ void RenderThread::run()
     qDebug() << "QEventLoop exited in thread";
 */
 
-    runApp();
-    qDebug() << "QEventLoop exited";
+//    runApp();
+//    qDebug() << "QEventLoop exited";
 
     MapPaintSurface paintSurface;
 

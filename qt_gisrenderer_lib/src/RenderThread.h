@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <functional>
 
+#include <QGuiApplication>
 #include <QImage>
 #include <QEventLoop>
 
@@ -37,9 +38,7 @@ class Q_GISRENDERER_EXPORT RenderThread
     void run();
 
   private:
-    int runQGuiApplication(
-          int&   argc,
-          char** argv);
+    QGuiApplication* mApp;
 
     std::thread             mThread;
     std::mutex              mutex;
