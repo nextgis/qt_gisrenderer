@@ -77,7 +77,6 @@ void RenderThread::run()
     double scaleFactor = 1;
 
     for (int i = 0; i < 10; ++i) {
-        qDebug() << ".......wake up.........";
         mutex.lock();
         int width = this->width;
         int height = this->height;
@@ -87,9 +86,9 @@ void RenderThread::run()
         RenderedImage renderedImage = this->mRenderedImage;
         mutex.unlock();
 
-
+        width += scaleFactor * 10;
         qDebug() << "width: " << width << ", height: " << height;
-        paintSurface.resize(width + scaleFactor * 10, height);
+        paintSurface.resize(width, height);
         paintSurface.render();
         QImage image = paintSurface.grabFramebuffer();
         renderedImage(image, scaleFactor);
