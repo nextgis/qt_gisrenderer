@@ -64,6 +64,7 @@ void RenderThread::run()
     QGuiApplication a(argc, argv);
     qDebug() << "guiApp started";
 
+/*
     QEventLoop loop;
     QTimer     timer;
     timer.setSingleShot(true);
@@ -71,6 +72,7 @@ void RenderThread::run()
     timer.start(1000);  // your predefined timeout
     loop.exec();
     qDebug() << "QEventLoop exited in thread";
+*/
 
     MapPaintSurface paintSurface;
 
