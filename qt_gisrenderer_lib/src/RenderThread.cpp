@@ -55,14 +55,34 @@ void RenderThread::render(
 }  // RenderThread::render
 
 
+int runApp()
+{
+    qDebug() << "guiApp starting";
+    std::string     test = "test";
+    int             argc = 1;
+    char*           argv[] = { const_cast <char*>(test.c_str()) };
+    QGuiApplication app(argc, argv);
+    qDebug() << "guiApp started";
+
+    QTimer timer;
+    timer.setSingleShot(true);
+    app.connect(&timer, SIGNAL(timeout()), &app, SLOT(quit()));
+    timer.start(1000);  // your predefined timeout
+
+    return (app.exec());
+} // runApp
+
+
 void RenderThread::run()
 {
+/*
     qDebug() << "guiApp starting";
     std::string     test = "test";
     int             argc = 1;
     char*           argv[] = { const_cast <char*>(test.c_str()) };
     QGuiApplication a(argc, argv);
     qDebug() << "guiApp started";
+*/
 
 /*
     QEventLoop loop;
@@ -73,6 +93,9 @@ void RenderThread::run()
     loop.exec();
     qDebug() << "QEventLoop exited in thread";
 */
+
+    runApp();
+    qDebug() << "QEventLoop exited";
 
     MapPaintSurface paintSurface;
 
