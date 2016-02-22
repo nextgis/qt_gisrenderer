@@ -15,14 +15,15 @@ RenderThread::RenderThread(RenderedImage renderedImage)
     char*           argv[] = { const_cast <char*>(test.c_str()) };
     mApp = new QGuiApplication(argc, argv);
 
+/*
     QTimer timer;
     timer.setSingleShot(true);
     mApp->connect(&timer, SIGNAL(timeout()), mApp, SLOT(quit()));
     timer.start(1000);  // your predefined timeout
 
     mApp->exec();
-
     qDebug() << "guiApp started";
+*/
 }
 
 
