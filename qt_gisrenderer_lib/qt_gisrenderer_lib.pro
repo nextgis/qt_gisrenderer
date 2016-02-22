@@ -4,7 +4,6 @@ TEMPLATE = lib
 INSTALLS += target
 #target.path=$$[ENV_VAR]/path/to/install
 
-
 QT = core gui
 
 #QMAKE_CXXFLAGS += $$(CXXFLAGS)

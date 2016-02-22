@@ -1,10 +1,13 @@
 #ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 
-#include <QMutex>
-#include <QSize>
-#include <QThread>
-#include <QWaitCondition>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+
+#include <QImage>
+#include <QEventLoop>
 
 #include "MapPaintSurface.h"
 
@@ -16,41 +19,43 @@
 
 
 class Q_GISRENDERER_EXPORT RenderThread
-    : public QThread
 {
-    Q_OBJECT
+    using RenderedImage = std::function <void (const QImage& image, double scaleFactor)>;
 
   public:
-    explicit RenderThread(QObject* parent = 0);
+    explicit RenderThread(RenderedImage renderedImage);
     ~RenderThread();
 
     void render(
           double centerX,
           double centerY,
-          double scaleFactor,
-          QSize  resultSize);
-
-  signals:
-    void renderedImage(
-          const QImage& image,
-          double        scaleFactor);
+          int    width,
+          int    height,
+          double scaleFactor);
 
   protected:
-    void run() Q_DECL_OVERRIDE;
+    void run();
 
   private:
-    MapPaintSurface* mPaintSurface;
+    int runQGuiApplication(
+          int&   argc,
+          char** argv);
 
-    QMutex mutex;
-    QWaitCondition condition;
+    std::thread             mThread;
+    std::mutex              mutex;
+    std::timed_mutex        timedMutex;
+    std::condition_variable condition;
 
     double centerX;
     double centerY;
+    int    width;
+    int    height;
     double scaleFactor;
-    QSize resultSize;
 
-    bool restart;
-    bool abort;
+    RenderedImage mRenderedImage;
+
+    bool restart;  // TODO: use atomic (?)
+    bool abort;  // TODO: use atomic (?)
 };
 
 

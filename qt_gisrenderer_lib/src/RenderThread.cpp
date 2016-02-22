@@ -1,12 +1,14 @@
 #include "RenderThread.h"
 
+#include <QGuiApplication>
+#include <QTimer>
 
-RenderThread::RenderThread(QObject* parent)
-    : QThread(parent)
+
+RenderThread::RenderThread(RenderedImage renderedImage)
+    : mRenderedImage(renderedImage)
 {
     restart = false;
     abort = false;
-    mPaintSurface = new MapPaintSurface();
 }
 
 
@@ -14,64 +16,84 @@ RenderThread::~RenderThread()
 {
     mutex.lock();
     abort = true;
-    condition.wakeOne();
+    condition.notify_one();
     mutex.unlock();
 
-    wait();
+    if (mThread.joinable()) {
+        qDebug() << "mThread.join()";
+        mThread.join();
+    }
 }
 
 
 void RenderThread::render(
       double centerX,
       double centerY,
-      double scaleFactor,
-      QSize  resultSize)
+      int    width,
+      int    height,
+      double scaleFactor)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard <std::mutex> locker(mutex);
 
     this->centerX = centerX;
     this->centerY = centerY;
     this->scaleFactor = scaleFactor;
-    this->resultSize = resultSize;
+    this->width = width;
+    this->height = height;
 
-    if (!isRunning()) {
-        mPaintSurface->doneCurrent();
-        mPaintSurface->moveToThread(this);
-        start(LowPriority);
-    } else {
+    qDebug() << "render()";
+
+    if (!mThread.joinable()) {
+        qDebug() << "running thread";
+        std::thread thread(&RenderThread::run, this);
+        mThread = std::move(thread);
+    }
+    else {
         restart = true;
-        condition.wakeOne();
+        condition.notify_one();
     }
 }  // RenderThread::render
 
 
 void RenderThread::run()
 {
-    forever {
+    qDebug() << "guiApp starting";
+    std::string     test = "test";
+    int             argc = 1;
+    char*           argv[] = { const_cast <char*>(test.c_str()) };
+    QGuiApplication a(argc, argv);
+    qDebug() << "guiApp started";
+
+    QEventLoop loop;
+    QTimer     timer;
+    timer.setSingleShot(true);
+    loop.connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+    timer.start(1000);  // your predefined timeout
+    loop.exec();
+    qDebug() << "QEventLoop exited in thread";
+
+    MapPaintSurface paintSurface;
+
+    double scaleFactor = 1;
+
+    for (int i = 0; i < 10; ++i) {
+        qDebug() << ".......wake up.........";
         mutex.lock();
-        QSize resultSize = this->resultSize;
-        double scaleFactor = this->scaleFactor;
-        double centerX = this->centerX;
-        double centerY = this->centerY;
-        bool aborted = abort;
+        int width = this->width;
+        int height = this->height;
+//        double scaleFactor = this->scaleFactor;
+        double        centerX = this->centerX;
+        double        centerY = this->centerY;
+        RenderedImage renderedImage = this->mRenderedImage;
         mutex.unlock();
 
-        if (aborted) {
-            break;
-        }
 
-        mPaintSurface->resize(resultSize.width(), resultSize.height());
-        mPaintSurface->render();
-        QImage image = mPaintSurface->grabFramebuffer();
-        if (!restart) {
-            emit renderedImage(image, scaleFactor);
-        }
+        qDebug() << "width: " << width << ", height: " << height;
+        paintSurface.resize(width + scaleFactor * 10, height);
+        paintSurface.render();
+        QImage image = paintSurface.grabFramebuffer();
+        renderedImage(image, scaleFactor);
 
-        mutex.lock();
-        if (!restart) {
-            condition.wait(&mutex);
-        }
-        restart = false;
-        mutex.unlock();
+        ++scaleFactor;
     }
 }  // RenderThread::run

@@ -1,8 +1,11 @@
 #include "MapWidget.h"
 
+#include <functional>
+#include <cmath>
+
 #include <QPainter>
 #include <QKeyEvent>
-#include <cmath>
+
 
 const double DefaultCenterX = -0.637011f;
 const double DefaultCenterY = -0.0395159f;
@@ -15,13 +18,15 @@ const int ScrollStep = 20;
 
 MapWidget::MapWidget(QWidget* parent)
     : QWidget(parent)
+    , mThread(std::bind(&MapWidget::updatePixmap,
+          this,
+          std::placeholders::_1,
+          std::placeholders::_2))
 {
     centerX = DefaultCenterX;
     centerY = DefaultCenterY;
     pixmapScale = DefaultScale;
     curScale = DefaultScale;
-
-    connect(&thread, &RenderThread::renderedImage, this, &MapWidget::updatePixmap);
 
     setCursor(Qt::CrossCursor);
 }
@@ -73,7 +78,7 @@ void MapWidget::paintEvent(QPaintEvent* event)
 
 void MapWidget::resizeEvent(QResizeEvent*  /* event */)
 {
-    thread.render(centerX, centerY, curScale, size());
+    mThread.render(centerX, centerY, size().width(), size().height(), curScale);
 }
 
 
@@ -169,7 +174,7 @@ void MapWidget::zoom(double zoomFactor)
 {
     curScale *= zoomFactor;
     update();
-    thread.render(centerX, centerY, curScale, size());
+    mThread.render(centerX, centerY, size().width(), size().height(), curScale);
 }
 
 
@@ -180,5 +185,5 @@ void MapWidget::scroll(
     centerX += deltaX * curScale;
     centerY += deltaY * curScale;
     update();
-    thread.render(centerX, centerY, curScale, size());
+    mThread.render(centerX, centerY, size().width(), size().height(), curScale);
 }

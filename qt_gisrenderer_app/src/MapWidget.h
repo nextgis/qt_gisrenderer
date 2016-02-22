@@ -35,7 +35,7 @@ class MapWidget
           int deltaX,
           int deltaY);
 
-    RenderThread thread;
+    RenderThread mThread;
     QPixmap pixmap;
     QPoint pixmapOffset;
     QPoint lastDragPos;
