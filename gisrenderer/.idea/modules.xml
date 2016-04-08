@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/capnproto-java/capnproto-java.iml" filepath="$PROJECT_DIR$/capnproto-java/capnproto-java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gismaplib/gismaplib.iml" filepath="$PROJECT_DIR$/gismaplib/gismaplib.iml" />
       <module fileurl="file://$PROJECT_DIR$/gisrenderer.iml" filepath="$PROJECT_DIR$/gisrenderer.iml" />
     </modules>
   </component>

@@ -1,0 +1,39 @@
+apply plugin: 'com.android.model.library'
+
+
+model {
+  android {
+    compileSdkVersion = 23
+    buildToolsVersion = "23.0.2"
+
+    defaultConfig.with {
+      minSdkVersion.apiLevel = 9
+      targetSdkVersion.apiLevel = 23
+      versionCode = 1
+      versionName = "1.0"
+    }
+  }
+
+  android.sources {
+    main {
+      // TODO: change it for not experimental gradle version
+      // to like this
+      // sourceSets.main.manifest.srcFile 'android-nkd/AndroidManifest.xml'
+      manifest.source {
+        srcDir 'android-nkd'
+        include 'AndroidManifest.xml'
+      }
+
+      res.source.srcDirs = ['android-nkd/res']
+
+//      jniLibs.source.srcDirs = ['android-nkd/libs']
+
+      jni.source.srcDirs = [] // it is included in the gismaplib module
+    }
+  }
+}
+
+
+dependencies {
+//  compile fileTree(dir: 'libs', include: ['*.jar'])
+}

@@ -1,26 +1,692 @@
-apply plugin: 'com.android.application'
+import org.gradle.internal.os.OperatingSystem;
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
 
-    defaultConfig {
-        applicationId "com.nextgis.gisrenderer"
-        minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+apply plugin: 'com.android.model.application'
+
+
+model {
+  android {
+    defaultConfig.with {
+      applicationId = "com.nextgis.gisrenderer"
+      versionCode = 1
+      versionName = "1.0"
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+
+    compileSdkVersion = 23
+    buildToolsVersion = "23.0.2"
+
+    defaultConfig.with {
+      minSdkVersion.apiLevel = 9
+//      targetSdkVersion.apiLevel = compileSdkVersion.asType(Integer)
+      targetSdkVersion.apiLevel = 23
+    }
+  }
+
+
+  android.buildTypes {
+    release {
+      minifyEnabled = false
+      proguardFiles.add(file('proguard-rules.pro'))
+
+// TODO: not work with new experimental gradle
+//      applicationVariants.all { variant ->
+//        variant.outputs.each { output ->
+//          output.outputFile =
+//              new File(output.outputFile.parent, "gisrenderer_" + defaultConfig.versionName + ".apk")
+//        }
+//      }
+    }
+  }
+}
+
+
+dependencies {
+  compile fileTree(dir: 'libs', include: ['*.jar'])
+//  testCompile 'junit:junit:4.12'
+//  compile project(':gismaplib')
+  compile project(':capnproto-java')
+  compile 'com.android.support:appcompat-v7:23.2.0'
+  compile 'com.android.support:support-v4:23.2.0'
+}
+
+//
+//
+//
+// capnproto
+
+
+tasks.all {
+  task ->
+    if (task.name.equals("preBuild")) {
+      // comment it if <project>/gismaplib/src/gismaplib/capnproto/*.capnp are not modified
+      // for speedup building
+      task.dependsOn capnpJavaBuild, capnpGismaplibBuild
     }
 }
 
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.2.0'
+//
+//
+//
+// capnproto (Java)
+
+
+model {
+  android {
+    task capnpJavaBuild {
+      doLast {
+        capnpCompileAll("${getAppModuleDir()}/src/main/java/com/nextgis/gismaplib/capnproto", "java")
+      }
+    }
+  }
+}
+
+//
+//
+//
+// capnproto gismaplib (C++)
+
+
+model {
+  android {
+    task capnpGismaplibBuild {
+      doLast {
+        capnpCompileAll("${getGismaplibModuleDir()}/src/gismaplib/capnproto", "c++")
+      }
+    }
+  }
+}
+
+//
+//
+//
+// native gismaplib
+//
+//
+//
+// depends on CrystaX 10.3+, in local.properties must be
+// ndk.dir=</path/to/crystax-ndk-10.3.x>
+//
+//
+//
+// http://ph0b.com/new-android-studio-ndk-support/
+
+
+model {
+// for new experimental gradle version 0.4.0
+// http://stackoverflow.com/a/31805506
+//    manifest.srcFile = 'main/AndroidManifest.xml'
+//    android.sources {
+//        main {
+//            manifest.source {
+//                srcDir 'main'
+//                include 'AndroidManifest.xml'
+//            }
+//            java.source.srcDirs = ['src/main/java']
+//        }
+//    }
+
+// all android.sources values
+// (from sources,
+// http://jcenter.bintray.com/com/android/tools/build/gradle-experimental/0.4.0/gradle-experimental-0.4.0-sources.jar
+// )
+//    android.sources {
+//        main {
+//            manifest.source.srcFile = 'main/AndroidManifest.xml'
+//
+//            java.source.srcDirs = ['src/main/jni', '../../../common']
+//            res.source.srcDirs = ['src/main/jni', '../../../common']
+//            assets.source.srcDirs = ['src/main/jni', '../../../common']
+//
+//            jni.source.srcDirs = ['src/main/jni', '../../../common']
+//            jniLibs.source.srcDirs = ['src/main/jni', '../../../common']
+//
+//            resources.source.srcDirs = ['src/main/jni', '../../../common']
+//            aidl.source.srcDirs = ['src/main/jni', '../../../common']
+//            renderscript.source.srcDirs = ['src/main/jni', '../../../common']
+//
+// form old version // sourceSets.androidTest.setRoot('src/androidTest') // tests
+//        }
+//    }
+
+  android.sources {
+    main {
+      jni.source.srcDirs = [
+          "${getGismaplibModuleDir()}/src",
+          "${getImportedLibsDir()}"
+      ]
+    }
+  }
+}
+
+//
+//
+//
+// see used flags by the compilation
+// <project>/build/tmp/compileArmeabi-v7a<Debug|Release>GismaplibSharedLibraryGismaplibMainC/options.txt
+// <project>/build/tmp/compileArmeabi-v7a<Debug|Release>GismaplibSharedLibraryGismaplibMainCpp/options.txt
+// <project>/build/tmp/linkArmeabi-v7a<Debug|Release>GismaplibSharedLibrary/options.txt
+
+// ndk-build debug output for used flags
+// ndk-build[.cmd] V=1
+
+//
+//
+//
+
+//final APP_ABIS = ["armeabi", "armeabi-v7a", "x86"]
+final APP_ABIS = ["armeabi-v7a"]
+
+final BOOST_LIBS = [
+    "boost_log",
+    "boost_chrono",
+    "boost_thread",
+    "boost_date_time",
+    "boost_filesystem",
+    "boost_regex",
+    "boost_system"]
+
+
+def getToolchainVersion()
+{
+  return "5"
+}
+
+
+def getBoostVersion()
+{
+  return "1.59.0"
+}
+
+
+def getLinkType()
+{
+  // also for shared linking uncomment / add System.loadLibrary() for each shared library
+  // in app/src/main/java/com/nextgis/gisrenderer/MainApplication.java
+
+//  return "shared"
+  return "static"
+}
+
+
+model {
+  android.ndk {
+    moduleName = "gismaplib"
+
+//    debuggable = false
+//    renderscriptNdkMode = false
+
+    platformVersion = 9
+
+    toolchain = "gcc"
+    toolchainVersion = getToolchainVersion()
+
+    // for stl type see
+    // http://developer.android.com/ndk/guides/cpp-support.html#runtimes
+    // file:///<path to ndk>/docs/Programmers_Guide/html/md_3__key__topics__building__a_p_p_l_i_c_a_t_i_o_n-_m_k.html
+
+    switch (getLinkType()) {
+      case "shared":
+        stl = "gnustl_shared"
+        break;
+
+      case "static":
+        stl = "gnustl_static"
+        break;
+    }
+
+//  ===  CFlags  ===
+
+    CFlags.add("-I" + "${getCrystaxIncDir()}")
+
+//  ===  cppFlags  ===
+
+//    cppFlags.add("-Wall")
+    cppFlags.add("-Wno-deprecated-declarations")
+    cppFlags.add("-fexceptions")
+    cppFlags.add("-frtti")
+    cppFlags.add("-std=c++11")
+//    cppFlags.add("-std=c++14")
+
+    cppFlags.add("-I" + "${getGismaplibModuleDir()}/src")
+
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/capnproto-cpp/include")
+
+    cppFlags.add("-I" + "${getBoostIncDir()}")
+    cppFlags.add("-I" + "${getCrystaxIncDir()}")
+
+//  ===  ldFlags  ===
+
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/capnproto-cpp/lib/libcapnp.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/capnproto-cpp/lib/libkj.a")
+
+    ldFlags.add("-llog")
+
+    ldFlags.add("-L" + "${getNdkDir()}/sources/crystax/empty")
+  }
+
+
+  android.productFlavors {
+    APP_ABIS.each { abi ->
+      create(getFlavorName(abi)) {
+        ndk.with {
+
+          abiFilters.add(abi)
+
+          def libs = []
+          BOOST_LIBS.each { name -> // for boost static linking
+            libs.add("${getBoostLibDir(abi)}/lib${name}.a")
+          }
+          libs.add(getGnuStlLib(abi))
+          libs.add(getCrystaxLib(abi))
+
+          libs.each { file ->
+            ldFlags.add("" + "${file}")
+          }
+        }
+      }
+    }
+  }
+}
+
+
+tasks.all {
+  task ->
+    if (getLinkType().equals("shared") && task.name.startsWith('link')) {
+      task.dependsOn copyNativeLibs, stripNativeLibs
+    }
+}
+
+
+task copyNativeLibs {
+  ["debug", "release"].each { buildType ->
+    APP_ABIS.each { abi ->
+      def libs = [:]
+      //BOOST_LIBS.each { name -> // for boost shared linking
+      //  libs[name] = "${getBoostLibDir(abi)}/lib${name}.so"
+      //}
+      libs.crystax = getCrystaxLibDir(abi)
+
+      libs.each { name, file ->
+        dependsOn tasks.create(name: "copy-native-library-${name}-${abi}-${buildType}", type: Copy) {
+          from file
+          into getTargetLibDir(abi, buildType)
+        }
+      }
+    }
+  }
+}
+
+task stripNativeLibs(dependsOn: copyNativeLibs) {
+  ["debug", "release"].each { buildType ->
+    APP_ABIS.each { abi ->
+      def libs = []
+      //libs.addAll(BOOST_LIBS) // for boost shared linking
+      libs.add("crystax")
+
+      libs.each { name ->
+        dependsOn tasks.create(name: "strip-native-library-${name}-${abi}-${buildType}", type: Exec) {
+          commandLine getStripExecutable(abi), "--strip-unneeded", "${getTargetLibDir(abi, buildType)}/lib${name}.so"
+        }
+      }
+    }
+  }
+}
+
+
+def getAppModuleDir()
+{
+  return "${rootDir}/app"
+}
+
+
+def getGismaplibModuleDir()
+{
+  return "${rootDir}/gismaplib"
+}
+
+
+def getLibPostfix()
+{
+  switch (getLinkType()) {
+    case "shared":
+      return "so"
+
+    case "static":
+      return "a"
+  }
+}
+
+
+def getImportedLibsDir()
+{
+  return "${getGismaplibModuleDir()}/imported"
+}
+
+
+def getLibsDir()
+{
+  return "${getImportedLibsDir()}/libs"
+}
+
+
+def getLibsPrebuiltDir()
+{
+  return "${getImportedLibsDir()}/libs_prebuilt"
+}
+
+
+def getFlavorName(abi)
+{
+  switch (abi) {
+    case "armeabi":
+      return "arm";
+    case "armeabi-v7a":
+      return "arm7"
+    case "arm64-v8a":
+      return "arm64"
+    default:
+      return abi.replaceAll('-', '_')
+  }
+}
+
+
+def getToolchainName(abi)
+{
+  switch (abi) {
+    case ~/^armeabi.*/:
+      return "arm-linux-androideabi"
+    case ~/^arm64.*/:
+      return "aarch64-linux-android"
+    case "mips":
+      return "mipsel-linux-android"
+    case "mips64":
+      return "mips64el-linux-android"
+    case ["x86", "x86_64"]:
+      return abi
+    default:
+      throw new GradleException("Unsupported ABI: '${abi}'")
+  }
+}
+
+
+def getToolchainPrefix(abi)
+{
+  switch (abi) {
+    case ~/^armeabi.*/:
+      return "arm-linux-androideabi"
+    case ~/^arm64.*/:
+      return "aarch64-linux-android"
+    case "mips":
+      return "mipsel-linux-android"
+    case "mips64":
+      return "mips64el-linux-android"
+    case "x86":
+      return "i686-linux-android"
+    case "x86_64":
+      return "x86_64-linux-android"
+    default:
+      throw new GradleException("Unsupported ABI: '${abi}'")
+  }
+}
+
+
+def getHostOS()
+{
+  if (OperatingSystem.current().isLinux()) {
+    return "linux"
+  }
+  if (OperatingSystem.current().isMacOsX()) {
+    return "darwin"
+  }
+  if (OperatingSystem.current().isWindows()) {
+    return "windows"
+  }
+  throw new GradleException("Unsupported host OS")
+}
+
+
+def getHostArch()
+{
+  def arch = System.getProperty("os.arch")
+  switch (arch) {
+    case ["x86_64", "amd64"]:
+      return "x86_64"
+    case ~/^i[3456]86/:
+    case "x86":
+      return "x86"
+    default:
+      throw new GradleException("Can't detect host's CPU architecture: '${arch}'")
+  }
+}
+
+
+def getHostTag()
+{
+  def tag = getHostOS()
+  def arch = getHostArch()
+  if (tag != "windows" || arch != "x86") {
+    tag += "-${arch}"
+  }
+  return tag
+}
+
+
+def getNdkDir()
+{
+  if (System.env.ANDROID_NDK_ROOT != null) {
+    return System.env.ANDROID_NDK_ROOT
+  }
+
+  Properties properties = new Properties()
+  properties.load(project.rootProject.file('local.properties').newDataInputStream())
+  def ndkdir = properties.getProperty('ndk.dir', null)
+  if (ndkdir == null) {
+    throw new GradleException("""\
+                NDK location not found.
+                Define location with ndk.dir in the local.properties file
+                or with an ANDROID_NDK_ROOT environment variable.""")
+  }
+
+  return ndkdir
+}
+
+
+def getNdkBuildCmd()
+{
+  def ndkbuild = getNdkDir() + "/ndk-build"
+  if (OperatingSystem.current().isWindows()) {
+    ndkbuild += ".cmd"
+  }
+  return ndkbuild
+}
+
+
+def getCrystaxNdkDir()
+{
+  def ndkDir = getNdkDir()
+  if (!(new File(ndkDir, "sources/crystax").exists())) {
+    throw new GradleException("""\
+            '${ndkDir}' is not a CrystaX NDK.
+            Edit ndk.dir in local.properties or set ANDROID_NDK_ROOT
+            environment variable pointing to CrystaX NDK""")
+  }
+
+  return ndkDir
+}
+
+
+def getCrystaxDir()
+{
+  return "${getCrystaxNdkDir()}/sources/crystax"
+}
+
+
+def getCrystaxIncDir()
+{
+  return "${getCrystaxDir()}/include"
+}
+
+
+def getCrystaxLibDir(abi)
+{
+  return "${getCrystaxDir()}/libs/${abi}/thumb"
+}
+
+
+def getCrystaxLib(abi)
+{
+  return "${getCrystaxLibDir(abi)}/libcrystax.${getLibPostfix()}"
+}
+
+
+def getGnuStlLib(abi)
+{
+  return "${getCrystaxNdkDir()}/sources/cxx-stl/gnu-libstdc++/${getToolchainVersion()}" +
+      "/libs/${abi}/thumb/libgnustl_${getLinkType()}.${getLibPostfix()}"
+}
+
+
+def getBoostDir()
+{
+  return "${getCrystaxNdkDir()}/sources/boost/${getBoostVersion()}"
+}
+
+
+def getBoostIncDir()
+{
+  return "${getBoostDir()}/include"
+}
+
+
+def getBoostLibDir(abi)
+{
+  return "${getBoostDir()}/libs/${abi}/gnu-${getToolchainVersion()}"
+}
+
+
+def getPrebuiltLibPaths(abi)
+{
+  def paths = []
+  paths += getBoostLibDir(abi)
+  paths += getCrystaxLibDir(abi)
+  return paths
+}
+
+
+def getStripExecutable(abi)
+{
+  def ndk = getCrystaxNdkDir()
+  def toolchainName = getToolchainName(abi)
+  def toolchainPrefix = getToolchainPrefix(abi)
+  def toolchainVersion = getToolchainVersion()
+  def hostTag = getHostTag()
+  def strip = "${ndk}/toolchains/${toolchainName}-${toolchainVersion}" +
+      "/prebuilt/${hostTag}/bin/${toolchainPrefix}-strip"
+  if (OperatingSystem.current().isWindows()) {
+    strip = strip.replaceAll('/', '\\\\') + '.exe'
+  }
+  return strip
+}
+
+
+def getTargetLibDir(abi, buildType)
+{
+  return "${buildDir}/intermediates/binaries/${buildType}/${getFlavorName(abi)}/lib/${abi}"
+}
+
+
+def getShell()
+{
+  if (OperatingSystem.current().isWindows()) {
+    return "cmd"
+  } else {
+    return "sh"
+  }
+}
+
+
+def getShellArg()
+{
+  if (OperatingSystem.current().isWindows()) {
+    return "/c"
+  } else {
+    return "-c"
+  }
+}
+
+
+def getCapnpDir()
+{
+  return "${getLibsPrebuiltDir()}/capnproto-cpp"
+}
+
+
+def getCapnpToolsDir()
+{
+  return "${getCapnpDir()}/tools"
+}
+
+
+def getCapnpExecutable()
+{
+  def capnp = "${getCapnpToolsDir()}/capnp"
+  if (OperatingSystem.current().isWindows()) {
+    capnp = capnp.replaceAll('/', '\\\\') + '.exe'
+  }
+  return capnp
+}
+
+
+def getCapnpLangExecutable(lang)
+{
+  def capnp = "${getCapnpToolsDir()}/capnpc-${lang}"
+  if (OperatingSystem.current().isWindows()) {
+    capnp = capnp.replaceAll('/', '\\\\') + '.exe'
+  }
+  return capnp
+}
+
+
+def getCapnpImportDir()
+{
+  return "${getCapnpDir()}/include"
+}
+
+
+def getCapnpProjectFilesDir()
+{
+  return "${getGismaplibModuleDir()}/src/gismaplib/capnproto"
+}
+
+
+def capnpCompile(lang, srcDir, dstDir, capnpFile)
+{
+  exec {
+    workingDir file(getCapnpToolsDir())
+    commandLine getShell(), getShellArg(), getCapnpExecutable(), "compile",
+        "-I${getCapnpImportDir()}",
+        "-I${srcDir}",
+        "--src-prefix=${srcDir}",
+        "-o${getCapnpLangExecutable(lang)}:${dstDir}",
+        capnpFile
+//    executable "something.sh"
+//    args "-t", target
+
+    println "lang: " + lang
+    println "srcDir: " + srcDir
+    println "dstDir: " + dstDir
+    println "capnpFile: " + capnpFile
+    println "workingDir: " + workingDir
+    println "commandLine: " + commandLine
+  }
+}
+
+
+def capnpCompileAll(dstDir, lang)
+{
+  def tree = fileTree(getCapnpProjectFilesDir())
+  tree.include '**/*.capnp'
+  tree.each { capnpFile ->
+    capnpCompile(lang, capnpFile.getParent(), dstDir, capnpFile)
+  }
 }
