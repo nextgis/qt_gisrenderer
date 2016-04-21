@@ -630,8 +630,9 @@ def getCapnpToolsDir()
 
 def getCapnpExecutable()
 {
-  def capnp = "${getCapnpToolsDir()}/capnp"
+  def capnp = "capnp"
   if (OperatingSystem.current().isWindows()) {
+    capnp = "${getCapnpToolsDir()}/" + capnp
     capnp = capnp.replaceAll('/', '\\\\') + '.exe'
   }
   return capnp
@@ -640,11 +641,12 @@ def getCapnpExecutable()
 
 def getCapnpLangExecutable(lang)
 {
-  def capnp = "${getCapnpToolsDir()}/capnpc-${lang}"
+  def capnpLang = "${lang}"
   if (OperatingSystem.current().isWindows()) {
-    capnp = capnp.replaceAll('/', '\\\\') + '.exe'
+    capnpLang = "${getCapnpToolsDir()}/capnpc-" + capnpLang
+    capnpLang = capnpLang.replaceAll('/', '\\\\') + '.exe'
   }
-  return capnp
+  return capnpLang
 }
 
 
@@ -660,11 +662,21 @@ def getCapnpProjectFilesDir()
 }
 
 
+def getCapnpCommandLinePrefix()
+{
+  def commandLine = "${getCapnpExecutable()}"
+  if (OperatingSystem.current().isWindows()) {
+    commandLine = "${getShell()}, ${getShellArg()}, " + commandLine
+  }
+  return commandLine
+}
+
+
 def capnpCompile(lang, srcDir, dstDir, capnpFile)
 {
   exec {
     workingDir file(getCapnpToolsDir())
-    commandLine getShell(), getShellArg(), getCapnpExecutable(), "compile",
+    commandLine getCapnpCommandLinePrefix(), "compile",
         "-I${getCapnpImportDir()}",
         "-I${srcDir}",
         "--src-prefix=${srcDir}",
