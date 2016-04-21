@@ -45,6 +45,7 @@ dependencies {
 //  testCompile 'junit:junit:4.12'
 //  compile project(':gismaplib')
   compile project(':capnproto-java')
+  testCompile 'junit:junit:4.12'
   compile 'com.android.support:appcompat-v7:23.3.0'
   compile 'com.android.support:support-v4:23.3.0'
 }
@@ -672,12 +673,12 @@ def capnpCompile(lang, srcDir, dstDir, capnpFile)
 //    executable "something.sh"
 //    args "-t", target
 
-    println "lang: " + lang
-    println "srcDir: " + srcDir
-    println "dstDir: " + dstDir
-    println "capnpFile: " + capnpFile
-    println "workingDir: " + workingDir
-    println "commandLine: " + commandLine
+    println "lang: ${lang}"
+    println "srcDir: ${srcDir}"
+    println "dstDir: ${dstDir}"
+    println "capnpFile: ${capnpFile}"
+    println "workingDir: ${workingDir}"
+    println "commandLine: ${commandLine}"
   }
 }
 
