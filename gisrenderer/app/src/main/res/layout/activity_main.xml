@@ -24,6 +24,12 @@
         android:text="Hello World!"
         />
 
+    <ImageView
+        android:id="@+id/test_image"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        />
+
     <Button
         android:id="@+id/test_button"
         android:layout_width="wrap_content"

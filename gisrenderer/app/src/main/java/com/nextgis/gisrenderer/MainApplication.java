@@ -15,6 +15,7 @@ public class MainApplication
   static {
     //System.loadLibrary("crystax"); // need for shared linking on some devices
     //System.loadLibrary("gnustl_shared"); // need for shared linking on some devices
+//    System.loadLibrary("mapbox-gl");
     System.loadLibrary("gismaplib");
   }
 

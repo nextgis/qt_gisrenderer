@@ -1,5 +1,6 @@
 package com.nextgis.gismaplib.messages;
 
+import android.graphics.Bitmap;
 import com.nextgis.gismaplib.capnproto.GmConst;
 import com.nextgis.gismaplib.capnproto.GmMsg;
 import org.capnproto.AnyPointer;
@@ -12,15 +13,16 @@ public class MapboxMsg
 {
   protected static final String TAG = MapboxMsg.class.getName();
 
-  protected String mTestPath;
-  protected byte[] mImageData = null;
+  protected Bitmap mDstBitmap;
+  protected Boolean mIsImageStored        = null;
+  protected boolean mIsBitmapPixelsLocked = false;
 
 
-  public MapboxMsg(String testPath)
+  public MapboxMsg(Bitmap dstBitmap)
   {
     super();
     mMsgType = GmConst.MSG_TYPE_MAPBOX_IMAGE_DATA;
-    mTestPath = testPath;
+    mDstBitmap = dstBitmap;
   }
 
 
@@ -29,7 +31,15 @@ public class MapboxMsg
   {
     // set the query data
     GmMsg.MapboxQ.Builder dataQ = dataPtrQ.initAs(GmMsg.MapboxQ.factory);
-    dataQ.setTestPath(mTestPath);
+
+    long imagePointer = GmCoreMsg.lockBitmapPixels(mDstBitmap);
+    dataQ.setImagePointer(imagePointer);
+
+    if (imagePointer != 0) {
+      mIsBitmapPixelsLocked = true;
+      dataQ.setImageWidth(mDstBitmap.getWidth());
+      dataQ.setImageHeight(mDstBitmap.getHeight());
+    }
   }
 
 
@@ -40,17 +50,23 @@ public class MapboxMsg
     // get the reply data
     AnyPointer.Reader dataPtrR = super.msgWorker();
     GmMsg.MapboxR.Reader dataR = dataPtrR.getAs(GmMsg.MapboxR.factory);
-    mImageData = dataR.getImageData().toArray();
+
+    mIsImageStored = dataR.getIsImageStored();
+    if (mIsImageStored) {
+      GmCoreMsg.unlockBitmapPixels(mDstBitmap);
+      mIsBitmapPixelsLocked = false;
+    }
+
     return (dataPtrR);
   }
 
 
-  public byte[] getImageData()
+  public Boolean isImageStored()
       throws IOException
   {
-    if (null == mImageData) {
+    if (null == mIsImageStored) {
       msgWorker();
     }
-    return (mImageData);
+    return (mIsImageStored);
   }
 }

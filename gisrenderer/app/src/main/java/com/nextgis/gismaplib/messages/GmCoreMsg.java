@@ -1,5 +1,6 @@
 package com.nextgis.gismaplib.messages;
 
+import android.graphics.Bitmap;
 import com.nextgis.gismaplib.capnproto.GmConst;
 import com.nextgis.gismaplib.capnproto.GmMsg;
 import org.capnproto.AnyPointer;
@@ -22,6 +23,12 @@ public abstract class GmCoreMsg
 
 
   private native static byte[] gmcoreSendMessage(ByteBuffer segmentsQuery);
+
+
+  public native static long lockBitmapPixels(Bitmap bitmap);
+
+
+  public native static void unlockBitmapPixels(Bitmap bitmap);
 
 
   protected abstract void setDataQ(AnyPointer.Builder dataPtrQ);

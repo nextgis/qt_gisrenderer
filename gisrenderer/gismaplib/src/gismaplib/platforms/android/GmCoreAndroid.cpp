@@ -2,8 +2,7 @@
 #include <unistd.h>
 
 #include <android/log.h>
-
-#include <jni.h>
+#include <android/bitmap.h>
 
 
 #define LOG(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "GmCore", fmt, ## __VA_ARGS__)
@@ -101,3 +100,31 @@ extern "C" jbyteArray Java_com_nextgis_gismaplib_messages_GmCoreMsg_gmcoreSendMe
   env->SetByteArrayRegion(segmentsReply, 0, segmentsSizesR, segmentsPtrsR);
   return (segmentsReply);
 }  // Java_com_nextgis_gismaplib_messages_GmCoreMsg_gmcoreSendMessage
+
+
+// http://stackoverflow.com/a/22693766
+extern "C" jlong Java_com_nextgis_gismaplib_messages_GmCoreMsg_lockBitmapPixels(
+    JNIEnv* env,
+    jclass type,
+    jobject bitmap)
+{
+  void* pPixels;
+  int ret;
+
+  if ((ret = AndroidBitmap_lockPixels(env, bitmap, &pPixels)) < 0) {
+    BOOST_LOG_SEV(gmcore::GmLog::log, gmcore::error)
+      << "Error - AndroidBitmap_lockPixels() Failed! error: " << ret;
+    return 0;
+  }
+
+  return reinterpret_cast<jlong> (pPixels);
+}
+
+
+extern "C" void Java_com_nextgis_gismaplib_messages_GmCoreMsg_unlockBitmapPixels(
+    JNIEnv* env,
+    jclass type,
+    jobject bitmap)
+{
+  AndroidBitmap_unlockPixels(env, bitmap);
+}

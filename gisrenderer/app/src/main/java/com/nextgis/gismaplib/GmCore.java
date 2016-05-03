@@ -1,5 +1,6 @@
 package com.nextgis.gismaplib;
 
+import android.graphics.Bitmap;
 import com.nextgis.gismaplib.messages.GetTestTextMsg;
 import com.nextgis.gismaplib.messages.MapboxMsg;
 
@@ -22,10 +23,10 @@ public final class GmCore
   }
 
 
-  public byte[] getMapboxImageData(String testPath)
+  public Boolean putMapboxImageData(Bitmap dstBitmap)
       throws IOException
   {
-    return (new MapboxMsg(testPath).getImageData());
+    return (new MapboxMsg(dstBitmap).isImageStored());
   }
 
 

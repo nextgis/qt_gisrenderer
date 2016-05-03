@@ -21,11 +21,13 @@ struct Message
 
 struct MapboxQ
 {
-  testPath @0 :Text;
+  imagePointer @0 :UInt64;
+  imageWidth @1 :UInt32;
+  imageHeight @2 :UInt32;
 }
 struct MapboxR
 {
-  imageData @0 :Data;
+  isImageStored @0 :Bool = false;
 }
 
 
