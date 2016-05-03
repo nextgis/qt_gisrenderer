@@ -19,6 +19,17 @@ struct Message
 }
 
 
+struct MapboxQ
+{
+  testPath @0 :Text;
+}
+struct MapboxR
+{
+  imageData @0 :Data;
+}
+
+
+
 # for test
 struct GetTestTextQ
 {

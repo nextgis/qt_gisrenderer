@@ -10,11 +10,13 @@
 
 #include "gismaplib/messages/SendErrorMsg.h"
 #include "gismaplib/messages/GetTestTextMsg.h"
+#include "gismaplib/messages/MapboxMsg.h"
 
 
 namespace gmcore
 {
-  GmCore::GmCore() {}
+  GmCore::GmCore()
+  { }
 
 
   void GmCore::gmcoreInit()
@@ -26,39 +28,45 @@ namespace gmcore
 
 
   kj::Array <capnp::word> GmCore::messageWorker(
-      void*         segmentsPtrsQ,
+      void* segmentsPtrsQ,
       long long int segmentsSizesQ)
   {
     // to the capnp query
     capnp::word* queryWords = static_cast <capnp::word*>(segmentsPtrsQ);
-    size_t       querySize = segmentsSizesQ / sizeof(capnp::word);
+    size_t querySize = segmentsSizesQ / sizeof(capnp::word);
 
     kj::DestructorOnlyArrayDisposer adp;
-    kj::Array <capnp::word>         msgArray(queryWords, querySize, adp);
-    kj::ArrayPtr <capnp::word>      arrayPtrQ = msgArray.asPtr();
-    capnp::FlatArrayMessageReader   cpnQuery(arrayPtrQ);
+    kj::Array <capnp::word> msgArray(queryWords, querySize, adp);
+    kj::ArrayPtr <capnp::word> arrayPtrQ = msgArray.asPtr();
+    capnp::FlatArrayMessageReader cpnQuery(arrayPtrQ);
 
 
     // read the capnproto struct
     GmMsg::Message::Reader msgQ = cpnQuery.getRoot <GmMsg::Message>();
-    auto                   msgPtrQ = boost::make_shared <GmMsg::Message::Reader>(msgQ);
+    auto msgPtrQ = boost::make_shared <GmMsg::Message::Reader>(msgQ);
 
     // the new capnproto reply
     boost::shared_ptr <capnp::MallocMessageBuilder> cpnReply;
 
     // work the query by the query type
     switch (msgPtrQ->getMsgType()) {
-        case GmConst::MSG_TYPE_GET_TEST_TEXT: {
-          GetTestTextMsg msg(msgPtrQ);
-          cpnReply = msg.msgWorker();
-          break;
-        }
+      case GmConst::MSG_TYPE_MAPBOX_IMAGE_DATA: {
+        MapboxMsg msg(msgPtrQ);
+        cpnReply = msg.msgWorker();
+        break;
+      }
 
-        default: {
-          SendErrorMsg msg(msgPtrQ);
-          cpnReply = msg.msgWorker();
-          break;
-        }
+      case GmConst::MSG_TYPE_GET_TEST_TEXT: {
+        GetTestTextMsg msg(msgPtrQ);
+        cpnReply = msg.msgWorker();
+        break;
+      }
+
+      default: {
+        SendErrorMsg msg(msgPtrQ);
+        cpnReply = msg.msgWorker();
+        break;
+      }
     }  // switch
 
 

@@ -1,6 +1,7 @@
 package com.nextgis.gismaplib;
 
 import com.nextgis.gismaplib.messages.GetTestTextMsg;
+import com.nextgis.gismaplib.messages.MapboxMsg;
 
 import java.io.IOException;
 
@@ -18,6 +19,13 @@ public final class GmCore
   public GmCore()
   {
     gmcoreInit();
+  }
+
+
+  public byte[] getMapboxImageData(String testPath)
+      throws IOException
+  {
+    return (new MapboxMsg(testPath).getImageData());
   }
 
 

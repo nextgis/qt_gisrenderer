@@ -11,6 +11,7 @@ $Java.outerClassname("GmConst");
 const unknownId :UInt8 = 0;
 
 const msgTypeUnknown :Int32 = 0;
+const msgTypeMapboxImageData :Int32 = 1;
 const msgTypeError :Int32 = 1000;
 
 # for test
