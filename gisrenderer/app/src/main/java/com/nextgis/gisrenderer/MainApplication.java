@@ -13,8 +13,17 @@ public class MainApplication
 
 
   static {
-    //System.loadLibrary("crystax"); // need for shared linking on some devices
-    //System.loadLibrary("gnustl_shared"); // need for shared linking on some devices
+    System.loadLibrary("crystax");
+    System.loadLibrary("gnustl_shared");
+
+    System.loadLibrary("boost_system");
+    System.loadLibrary("boost_regex");
+    System.loadLibrary("boost_filesystem");
+    System.loadLibrary("boost_date_time");
+    System.loadLibrary("boost_thread");
+    System.loadLibrary("boost_chrono");
+//    System.loadLibrary("boost_log");
+
 //    System.loadLibrary("mapbox-gl");
     System.loadLibrary("gismaplib");
   }

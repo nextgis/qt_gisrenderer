@@ -54,14 +54,14 @@ dependencies {
 //
 //
 // capnproto
+//
+// If <project>/gismaplib/src/gismaplib/capnproto/*.capnp are modified
+// then sync project with gradle files for capnproto generation
 
 
 tasks.all {
   task ->
     if (task.name.equals("preBuild")) {
-      // comment it if <project>/gismaplib/src/gismaplib/capnproto/*.capnp are not modified
-      // for speedup building
-//      task.dependsOn capnpJavaBuild, capnpGismaplibBuild, copyMapboxLib
       task.dependsOn capnpJavaBuild, capnpGismaplibBuild
     }
 }
@@ -75,11 +75,27 @@ tasks.all {
 model {
   android {
     task capnpJavaBuild {
+      def capnpSrcFiles = fileTree("${getCapnpProjectFilesDir()}") {
+        include '**/*.capnp'
+      }
+      inputs.files capnpSrcFiles
+
+      def capnpDstFiles = fileTree("${getCapnpJavaFilesDir()}") {
+        include '**/*.java'
+      }
+      outputs.file capnpDstFiles
+
       doLast {
-        capnpCompileAll("${getAppModuleDir()}/src/main/java/com/nextgis/gismaplib/capnproto", "java")
+        capnpCompileAll("${getCapnpJavaFilesDir()}", "java")
       }
     }
   }
+}
+
+
+def getCapnpJavaFilesDir()
+{
+  return "${getAppModuleDir()}/src/main/java/com/nextgis/gismaplib/capnproto"
 }
 
 //
@@ -91,8 +107,19 @@ model {
 model {
   android {
     task capnpGismaplibBuild {
+      def capnpSrcFiles = fileTree("${getCapnpProjectFilesDir()}") {
+        include '**/*.capnp'
+      }
+      inputs.files capnpSrcFiles
+
+      def capnpDstFiles = fileTree("${getCapnpProjectFilesDir()}") {
+        include '**/*.capnp.c++'
+        include '**/*.capnp.h'
+      }
+      outputs.file capnpDstFiles
+
       doLast {
-        capnpCompileAll("${getGismaplibModuleDir()}/src/gismaplib/capnproto", "c++")
+        capnpCompileAll("${getCapnpProjectFilesDir()}", "c++")
       }
     }
   }
@@ -179,7 +206,7 @@ model {
 final APP_ABIS = ["armeabi-v7a"]
 
 final BOOST_LIBS = [
-    "boost_log",
+//    "boost_log",
     "boost_chrono",
     "boost_thread",
     "boost_date_time",
@@ -202,11 +229,11 @@ def getBoostVersion()
 
 def getLinkType()
 {
-  // also for shared linking uncomment / add System.loadLibrary() for each shared library
+  // also for shared linking uncomment/add System.loadLibrary() for each shared library
   // in app/src/main/java/com/nextgis/gisrenderer/MainApplication.java
 
-//  return "shared"
-  return "static"
+  return "shared"
+//  return "static"
 }
 
 
@@ -258,21 +285,26 @@ model {
 
 //  ===  ldFlags  ===
 
+//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.a")
+//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmbgl-core.a")
+//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.so")
+
     ldFlags.add("" + "${getLibsPrebuiltDir()}/capnproto-cpp/lib/libcapnp.a")
     ldFlags.add("" + "${getLibsPrebuiltDir()}/capnproto-cpp/lib/libkj.a")
 
-//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.a")
-//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmbgl-core.a")
+    if (getLinkType().equals("shared")) {
+      BOOST_LIBS.each { name ->
+        ldFlags.add("-l" + "${name}")
+      }
+    }
+
+    ldFlags.add("-L" + "${getNdkDir()}/sources/crystax/empty")
 
     ldFlags.add("-llog")
     ldFlags.add("-landroid")
     ldFlags.add("-ljnigraphics")
     ldFlags.add("-lEGL")
     ldFlags.add("-lGLESv2")
-
-//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.so")
-
-    ldFlags.add("-L" + "${getNdkDir()}/sources/crystax/empty")
   }
 
 
@@ -283,14 +315,32 @@ model {
 
           abiFilters.add(abi)
 
-          def libs = []
-          BOOST_LIBS.each { name -> // for boost static linking
-            libs.add("${getBoostLibDir(abi)}/lib${name}.a")
-          }
-          libs.add(getGnuStlLib(abi))
-          libs.add(getCrystaxLib(abi))
+          def libsFiles = []
 
-          libs.each { file ->
+          switch (getLinkType()) {
+            case "shared":
+              def libsDirs = []
+              libsDirs.add(getBoostLibDir(abi))
+//              libsDirs.add(getGnuStlLibDir(abi))
+//              libsDirs.add(getCrystaxLibDir(abi))
+
+              libsDirs.each { path ->
+                ldFlags.add("-L" + "${path}")
+              }
+              break;
+
+            case "static":
+              BOOST_LIBS.each { name -> // for boost linking
+                libsFiles.add(getBoostLibFilePath(abi, name, getLinkType()))
+              }
+              break;
+          }
+
+          libsFiles.add(getBoostLibFilePath(abi, "boost_log", "static"))
+          libsFiles.add(getGnuStlLib(abi))
+          libsFiles.add(getCrystaxLib(abi))
+
+          libsFiles.each { file ->
             ldFlags.add("" + "${file}")
           }
         }
@@ -302,7 +352,7 @@ model {
 
 tasks.all {
   task ->
-    if (getLinkType().equals("shared") && task.name.startsWith('link')) {
+    if (getLinkType().equals("shared") && task.name.equals("preBuild")) {
       task.dependsOn copyNativeLibs, stripNativeLibs
     }
 }
@@ -312,26 +362,12 @@ task copyNativeLibs {
   ["debug", "release"].each { buildType ->
     APP_ABIS.each { abi ->
       def libs = [:]
-      //BOOST_LIBS.each { name -> // for boost shared linking
-      //  libs[name] = "${getBoostLibDir(abi)}/lib${name}.so"
-      //}
-      libs.crystax = getCrystaxLibDir(abi)
-
-      libs.each { name, file ->
-        dependsOn tasks.create(name: "copy-native-library-${name}-${abi}-${buildType}", type: Copy) {
-          from file
-          into getTargetLibDir(abi, buildType)
-        }
+      BOOST_LIBS.each { name -> // for boost shared linking
+        libs[name] = "${getBoostLibFilePath(abi, name, "shared")}"
       }
-    }
-  }
-}
-
-task copyMapboxLib {
-  ["debug", "release"].each { buildType ->
-    APP_ABIS.each { abi ->
-      def libs = [:]
-      libs.mapbox = "${getMapboxLibDir()}/libmapbox-gl.so"
+      libs.crystax = getCrystaxLib(abi)
+      libs.gnustl = getGnuStlLib(abi)
+//      libs.mapbox = "${getMapboxLibDir()}/libmapbox-gl.so"
 
       libs.each { name, file ->
         dependsOn tasks.create(name: "copy-native-library-${name}-${abi}-${buildType}", type: Copy) {
@@ -347,8 +383,9 @@ task stripNativeLibs(dependsOn: copyNativeLibs) {
   ["debug", "release"].each { buildType ->
     APP_ABIS.each { abi ->
       def libs = []
-      //libs.addAll(BOOST_LIBS) // for boost shared linking
+      libs.addAll(BOOST_LIBS)
       libs.add("crystax")
+      libs.add("gnustl_shared")
 
       libs.each { name ->
         dependsOn tasks.create(name: "strip-native-library-${name}-${abi}-${buildType}", type: Exec) {
@@ -372,9 +409,9 @@ def getGismaplibModuleDir()
 }
 
 
-def getLibPostfix()
+def getLibPostfix(linkType)
 {
-  switch (getLinkType()) {
+  switch (linkType) {
     case "shared":
       return "so"
 
@@ -562,14 +599,20 @@ def getCrystaxLibDir(abi)
 
 def getCrystaxLib(abi)
 {
-  return "${getCrystaxLibDir(abi)}/libcrystax.${getLibPostfix()}"
+  return "${getCrystaxLibDir(abi)}/libcrystax.${getLibPostfix(getLinkType())}"
+}
+
+
+def getGnuStlLibDir(abi)
+{
+  return "${getCrystaxNdkDir()}/sources/cxx-stl/gnu-libstdc++/${getToolchainVersion()}" +
+      "/libs/${abi}/thumb"
 }
 
 
 def getGnuStlLib(abi)
 {
-  return "${getCrystaxNdkDir()}/sources/cxx-stl/gnu-libstdc++/${getToolchainVersion()}" +
-      "/libs/${abi}/thumb/libgnustl_${getLinkType()}.${getLibPostfix()}"
+  return "${getGnuStlLibDir(abi)}/libgnustl_${getLinkType()}.${getLibPostfix(getLinkType())}"
 }
 
 
@@ -588,6 +631,12 @@ def getBoostIncDir()
 def getBoostLibDir(abi)
 {
   return "${getBoostDir()}/libs/${abi}/gnu-${getToolchainVersion()}"
+}
+
+
+def getBoostLibFilePath(abi, name, linkType)
+{
+  return "${getBoostLibDir(abi)}/lib${name}.${getLibPostfix(linkType)}"
 }
 
 
