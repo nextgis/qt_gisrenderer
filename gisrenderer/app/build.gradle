@@ -83,7 +83,7 @@ model {
       def capnpDstFiles = fileTree("${getCapnpJavaFilesDir()}") {
         include '**/*.java'
       }
-      outputs.file capnpDstFiles
+      outputs.files capnpDstFiles
 
       doLast {
         capnpCompileAll("${getCapnpJavaFilesDir()}", "java")
@@ -116,7 +116,7 @@ model {
         include '**/*.capnp.c++'
         include '**/*.capnp.h'
       }
-      outputs.file capnpDstFiles
+      outputs.files capnpDstFiles
 
       doLast {
         capnpCompileAll("${getCapnpProjectFilesDir()}", "c++")
@@ -206,7 +206,7 @@ model {
 final APP_ABIS = ["armeabi-v7a"]
 
 final BOOST_LIBS = [
-//    "boost_log",
+//    "boost_log", // boost_log can be compiled only static (bug?)
     "boost_chrono",
     "boost_thread",
     "boost_date_time",
@@ -232,8 +232,8 @@ def getLinkType()
   // also for shared linking uncomment/add System.loadLibrary() for each shared library
   // in app/src/main/java/com/nextgis/gisrenderer/MainApplication.java
 
-  return "shared"
-//  return "static"
+//  return "shared"
+  return "static"
 }
 
 
@@ -277,17 +277,57 @@ model {
 
     cppFlags.add("-I" + "${getGismaplibModuleDir()}/src")
 
+    cppFlags.add("-I" + "${getLibsDir()}/rapidjson/include")
+    cppFlags.add("-I" + "${getLibsDir()}/variant/include")
+
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/geojsonvt/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/libcurl/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/libjpeg-turbo/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/libpng/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/libuv/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/libzip/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/libzip/lib/libzip/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/openssl/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/nunicode/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/sqlite/include")
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/zlib/include")
+
+    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/mapbox-gl-native/include")
+
+// for dev, mapbox compiling in the project
+//    cppFlags.add("-I" + "${getLibsDir()}/mapbox-gl-native/gen/include")
+//    cppFlags.add("-I" + "${getLibsDir()}/mapbox-gl-native/include")
+//    cppFlags.add("-I" + "${getLibsDir()}/mapbox-gl-native/src")
+//    cppFlags.add("-I" + "${getLibsDir()}/mapbox-gl-native/platform/default")
+//    cppFlags.add("-I" + "${getLibsDir()}/mapbox-gl-native/platform/crystax-ndk/src")
+//    cppFlags.add("-I" + "${getLibsDir()}/mapbox-gl-native/platform/crystax-ndk/jni")
+
     cppFlags.add("-I" + "${getLibsPrebuiltDir()}/capnproto-cpp/include")
-//    cppFlags.add("-I" + "${getLibsPrebuiltDir()}/mapbox-gl-native/include")
 
     cppFlags.add("-I" + "${getBoostIncDir()}")
     cppFlags.add("-I" + "${getCrystaxIncDir()}")
 
 //  ===  ldFlags  ===
 
-//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.a")
-//    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmbgl-core.a")
 //    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.so")
+    ldFlags.add("" + "-Wl,--whole-archive")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmapbox-gl.a")
+    ldFlags.add("" + "-Wl,--no-whole-archive")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/mapbox-gl-native/lib/libmbgl-core.a")
+
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/geojsonvt/lib/libgeojsonvt.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/libcurl/lib/libcurl.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/libjpeg-turbo/lib/libjpeg.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/libpng/lib/libpng16.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/libuv/lib/libuv.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/libzip/lib/libzip.a")
+    ldFlags.add("" + "-Wl,--whole-archive")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/openssl/lib/libcrypto.a")
+    ldFlags.add("" + "-Wl,--no-whole-archive")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/openssl/lib/libssl.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/nunicode/lib/libnu.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/sqlite/lib/libsqlite3.a")
+    ldFlags.add("" + "${getLibsPrebuiltDir()}/zlib/lib/libz.a")
 
     ldFlags.add("" + "${getLibsPrebuiltDir()}/capnproto-cpp/lib/libcapnp.a")
     ldFlags.add("" + "${getLibsPrebuiltDir()}/capnproto-cpp/lib/libkj.a")
@@ -298,13 +338,13 @@ model {
       }
     }
 
-    ldFlags.add("-L" + "${getNdkDir()}/sources/crystax/empty")
-
-    ldFlags.add("-llog")
     ldFlags.add("-landroid")
+    ldFlags.add("-llog")
     ldFlags.add("-ljnigraphics")
     ldFlags.add("-lEGL")
     ldFlags.add("-lGLESv2")
+
+    ldFlags.add("-L" + "${getNdkDir()}/sources/crystax/empty")
   }
 
 
@@ -336,6 +376,7 @@ model {
               break;
           }
 
+          // boost_log can be compiled only static (bug?)
           libsFiles.add(getBoostLibFilePath(abi, "boost_log", "static"))
           libsFiles.add(getGnuStlLib(abi))
           libsFiles.add(getCrystaxLib(abi))

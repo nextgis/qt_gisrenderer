@@ -13,16 +13,16 @@ public class MainApplication
 
 
   static {
-    System.loadLibrary("crystax");
-    System.loadLibrary("gnustl_shared");
+//    System.loadLibrary("crystax");
+//    System.loadLibrary("gnustl_shared");
 
-    System.loadLibrary("boost_system");
-    System.loadLibrary("boost_regex");
-    System.loadLibrary("boost_filesystem");
-    System.loadLibrary("boost_date_time");
-    System.loadLibrary("boost_thread");
-    System.loadLibrary("boost_chrono");
-//    System.loadLibrary("boost_log");
+//    System.loadLibrary("boost_system");
+//    System.loadLibrary("boost_regex");
+//    System.loadLibrary("boost_filesystem");
+//    System.loadLibrary("boost_date_time");
+//    System.loadLibrary("boost_thread");
+//    System.loadLibrary("boost_chrono");
+//    System.loadLibrary("boost_log"); // can be compiled only static
 
 //    System.loadLibrary("mapbox-gl");
     System.loadLibrary("gismaplib");
